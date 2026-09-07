@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard,
   ListOrdered,
@@ -68,6 +69,7 @@ function NavSection({ title, items, collapsed }: { title: string; items: NavItem
 }
 
 export function Sidebar() {
+  const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -105,11 +107,27 @@ export function Sidebar() {
           <Settings size={15} />
           {!collapsed && <span>Settings</span>}
         </NavLink>
-        <div className={`sidebar-item cursor-default ${collapsed ? 'justify-center px-2' : ''}`}>
-          <div className="w-6 h-6 rounded-full bg-sage flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-semibold">PT</span>
+        <div
+          className={`sidebar-item cursor-pointer hover:bg-ivory ${collapsed ? 'justify-center px-2' : ''}`}
+          title={user?.email ? `${user.name} (${user.email})` : 'Product Team'}
+          onClick={() => logout()}
+        >
+          <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white text-[10px] font-semibold">
+            {user?.name
+              ? user.name
+                  .split(' ')
+                  .map((n: string) => n[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase()
+              : 'PT'}
           </div>
-          {!collapsed && <span className="text-text-primary font-medium">Product Team</span>}
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-text-primary truncate">{user?.name || 'Product Team'}</p>
+              <p className="text-[10px] text-text-secondary truncate">Sign Out</p>
+            </div>
+          )}
         </div>
       </div>
 

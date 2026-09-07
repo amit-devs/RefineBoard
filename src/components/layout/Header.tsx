@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell } from 'lucide-react';
+import { Search, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   title: string;
@@ -10,10 +11,20 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   const { stories, settings } = useAppContext();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const userInitials = user?.name
+    ? user.name
+        .split(' ')
+        .map((p) => p[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    : 'U';
 
   const activeSprint = settings.activeSprint;
   const sprintStories = stories.filter((s) => s.sprint === activeSprint);
@@ -96,15 +107,29 @@ export function Header({ title, subtitle }: HeaderProps) {
           {sprintStories.length} stories in active sprint
         </div>
 
-        {/* Notifications */}
-        <button className="relative w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-ivory rounded transition-colors">
-          <Bell size={16} />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-terracotta rounded-full" />
-        </button>
-
-        {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-sage flex items-center justify-center flex-shrink-0">
-          <span className="text-white text-xs font-semibold">PT</span>
+        {/* User Profile & Logout */}
+        <div className="flex items-center gap-2 pl-2 border-l border-border">
+          <div
+            className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white text-xs font-semibold shadow-xs"
+            title={user?.email || 'Logged in user'}
+          >
+            {userInitials}
+          </div>
+          <div className="hidden sm:block text-left">
+            <p className="text-xs font-semibold text-text-primary leading-tight truncate max-w-[110px]">
+              {user?.name || 'User'}
+            </p>
+            <p className="text-[10px] text-text-secondary leading-tight truncate max-w-[110px]">
+              {user?.email || ''}
+            </p>
+          </div>
+          <button
+            onClick={() => logout()}
+            className="ml-1 p-1.5 text-text-secondary hover:text-terracotta hover:bg-terracotta-light/20 rounded-md transition-colors"
+            title="Log Out"
+          >
+            <LogOut size={15} />
+          </button>
         </div>
       </div>
     </header>

@@ -18,6 +18,7 @@ node_modules
 # Production
 /dist
 /dist-ssr
+/dist-server
 /build
 /out
 
@@ -44,3 +45,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Other projects
+invoice management/

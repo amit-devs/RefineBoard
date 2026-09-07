@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("member")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+model UserStory {
+  id                   String                @id
+  title                String
+  asA                  String                @default("")
+  iWant                String                @default("")
+  soThat               String                @default("")
+  priority             String                @default("medium") // 'critical' | 'high' | 'medium' | 'low'
+  devStatus            String                @default("draft")  // 'draft' | 'in-progress' | 'blocked' | 'done'
+  refinementStage      String                @default("draft")  // 'draft' | 'needs-refinement' | 'under-review' | 'ready'
+  storyPoints          Int                   @default(0)
+  businessValue        Int                   @default(5)        // 1-10
+  effort               Int                   @default(5)        // 1-13
+  sprintId             String?
+  sprint               Sprint?               @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  assignee             String?
+  tags                 String                @default("[]")     // JSON array string
+  dependenciesReviewed Boolean               @default(false)
+  qualityScore         Int                   @default(0)
+  position             Int                   @default(0)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  acceptanceCriteria   AcceptanceCriterion[]
+  dependencies         StoryDependency[]
+  activityLog          StoryActivity[]
+
+  @@map("user_stories")
+}
+
+model AcceptanceCriterion {
+  id          String    @id
+  storyId     String
+  story       UserStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  given       String    @default("")
+  when        String    @default("")
+  then        String    @default("")
+  completed   Boolean   @default(false)
+  testability String    @default("needs-clarification") // 'good' | 'needs-clarification'
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("acceptance_criteria")
+}
+
+model StoryDependency {
+  id            String    @id @default(uuid())
+  storyId       String
+  story         UserStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  targetStoryId String
+  title         String
+  type          String    @default("depends-on") // 'depends-on' | 'blocks'
+
+  @@map("story_dependencies")
+}
+
+model StoryActivity {
+  id          String    @id @default(uuid())
+  storyId     String
+  story       UserStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  timestamp   DateTime  @default(now())
+  field       String
+  description String
+  oldValue    String?
+  newValue    String?
+  author      String?
+
+  @@map("story_activities")
+}
+
+model Sprint {
+  id        String      @id
+  name      String
+  startDate String
+  endDate   String
+  goal      String      @default("")
+  active    Boolean     @default(false)
+  stories   UserStory[]
+
+  @@map("sprints")
+}
+
+model TeamMember {
+  id          String @id
+  name        String
+  role        String
+  avatar      String
+  avatarColor String
+
+  @@map("team_members")
+}
+
+model AppSettings {
+  id                     String   @id @default("default")
+  workspaceName          String   @default("E-Commerce Platform")
+  defaultPriority        String   @default("medium")
+  defaultDevStatus       String   @default("draft")
+  defaultRefinementStage String   @default("draft")
+  dorQualityThreshold    Int      @default(70)
+  activeSprint           String   @default("sprint-4")
+  updatedAt              DateTime @updatedAt
+
+  @@map("app_settings")
+}

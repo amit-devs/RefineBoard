@@ -1,10 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '@/context/AuthContext';
 import { AppProvider } from '@/context/AppProvider';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { ToastContainer } from '@/components/ui';
 
+import { Login } from '@/pages/Login';
+import { Register } from '@/pages/Register';
 import { Dashboard } from '@/pages/Dashboard';
 import { ProductBacklog } from '@/pages/ProductBacklog';
 import { RefinementBoard } from '@/pages/RefinementBoard';
@@ -55,23 +59,34 @@ function AppLayout({ title, subtitle, children }: { title: string; subtitle?: st
 
 export default function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <Routes>
-          {ROUTES.map((route) => (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={
-                <AppLayout title={route.title} subtitle={route.subtitle}>
-                  {route.element}
-                </AppLayout>
-              }
-            />
-          ))}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Authentication Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
+            {/* Protected Application Routes */}
+            {ROUTES.map((route) => (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={
+                  <ProtectedRoute>
+                    <AppLayout title={route.title} subtitle={route.subtitle}>
+                      {route.element}
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+            ))}
+
+            {/* Catch-all fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AppProvider>
+    </AuthProvider>
   );
 }
