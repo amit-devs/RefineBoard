@@ -41,6 +41,15 @@ app.use(
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'RefineBoard Backend API is live.',
+    healthCheck: '/api/health',
+  });
+});
+
 // Health check endpoint (Used by Render and tests)
 app.use('/api/health', healthRouter);
 
