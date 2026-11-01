@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export function Register() {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,8 +18,20 @@ export function Register() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields.');
+    const cleanUsername = username.trim().toLowerCase();
+
+    if (!cleanUsername || !password || !confirmPassword) {
+      setError('Please fill in username and password.');
+      return;
+    }
+
+    if (cleanUsername.length < 3) {
+      setError('Username must be at least 3 characters.');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(cleanUsername)) {
+      setError('Username can only contain letters, numbers, underscores, and hyphens.');
       return;
     }
 
@@ -37,7 +49,7 @@ export function Register() {
     setSubmitting(true);
 
     try {
-      await register(name, email, password);
+      await register(cleanUsername, password, name.trim() || undefined);
       navigate('/', { replace: true });
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -138,31 +150,34 @@ export function Register() {
               <form onSubmit={handleSubmit} className="space-y-3.5">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Full Name <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
                   <div className="relative flex items-center">
                     <User className="absolute left-3.5 text-slate-400 pointer-events-none" size={16} />
                     <input
                       type="text"
-                      required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Alex Morgan"
+                      autoComplete="name"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     />
                   </div>
                 </div>
 
-                {/* Email */}
+                {/* Username */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Username</label>
                   <div className="relative flex items-center">
-                    <Mail className="absolute left-3.5 text-slate-400 pointer-events-none" size={16} />
+                    <User className="absolute left-3.5 text-slate-400 pointer-events-none" size={16} />
                     <input
-                      type="email"
+                      type="text"
                       required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="alex@company.com"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Choose a username (e.g. alex_m)"
+                      autoComplete="username"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     />
                   </div>

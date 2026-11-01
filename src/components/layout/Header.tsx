@@ -111,16 +111,16 @@ export function Header({ title, subtitle }: HeaderProps) {
         <div className="flex items-center gap-2 pl-2 border-l border-border">
           <div
             className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white text-xs font-semibold shadow-xs"
-            title={user?.email || 'Logged in user'}
+            title={user?.username ? `@${user.username}` : user?.email || 'Logged in user'}
           >
             {userInitials}
           </div>
           <div className="hidden sm:block text-left">
             <p className="text-xs font-semibold text-text-primary leading-tight truncate max-w-[110px]">
-              {user?.name || 'User'}
+              {user?.name || user?.username || 'User'}
             </p>
             <p className="text-[10px] text-text-secondary leading-tight truncate max-w-[110px]">
-              {user?.email || ''}
+              {user?.username ? `@${user.username}` : user?.email || ''}
             </p>
           </div>
           <button

@@ -4,16 +4,17 @@ import { api, getStoredToken, setStoredToken } from '@/services/api';
 export interface AuthUser {
   id: string;
   name: string;
-  email: string;
+  username: string;
   role: string;
+  email?: string;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -49,20 +50,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, [checkAuth]);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (username: string, password: string) => {
     setIsLoading(true);
     try {
-      const res = await api.auth.login(email, password);
+      const res = await api.auth.login(username, password);
       setUser(res.user);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
+  const register = useCallback(async (username: string, password: string, name?: string) => {
     setIsLoading(true);
     try {
-      const res = await api.auth.register(name, email, password);
+      const res = await api.auth.register(username, password, name);
       setUser(res.user);
     } finally {
       setIsLoading(false);

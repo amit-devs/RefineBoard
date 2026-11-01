@@ -133,7 +133,7 @@ export async function createStory(req: AuthRequest, res: Response, next: NextFun
           create: {
             field: 'created',
             description: `Story ${data.id} created`,
-            author: req.user?.email || 'System',
+            author: req.user?.username || req.user?.email || 'System',
           },
         },
       },
@@ -184,7 +184,7 @@ export async function updateStory(req: AuthRequest, res: Response, next: NextFun
           description: activityEntry.description || 'Updated',
           oldValue: activityEntry.oldValue ? String(activityEntry.oldValue) : null,
           newValue: activityEntry.newValue ? String(activityEntry.newValue) : null,
-          author: activityEntry.author || req.user?.email || null,
+          author: activityEntry.author || req.user?.username || req.user?.email || null,
         },
       };
     }

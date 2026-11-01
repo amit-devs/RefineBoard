@@ -109,7 +109,7 @@ export function Sidebar() {
         </NavLink>
         <div
           className={`sidebar-item cursor-pointer hover:bg-ivory ${collapsed ? 'justify-center px-2' : ''}`}
-          title={user?.email ? `${user.name} (${user.email})` : 'Product Team'}
+          title={user?.username ? `@${user.username}` : user?.email ? `${user.name} (${user.email})` : 'Product Team'}
           onClick={() => logout()}
         >
           <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white text-[10px] font-semibold">
@@ -120,12 +120,12 @@ export function Sidebar() {
                   .slice(0, 2)
                   .join('')
                   .toUpperCase()
-              : 'PT'}
+              : user?.username ? user.username.slice(0, 2).toUpperCase() : 'PT'}
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-text-primary truncate">{user?.name || 'Product Team'}</p>
-              <p className="text-[10px] text-text-secondary truncate">Sign Out</p>
+              <p className="text-xs font-medium text-text-primary truncate">{user?.name || user?.username || 'Product Team'}</p>
+              <p className="text-[10px] text-text-secondary truncate">{user?.username ? `@${user.username}` : 'Sign Out'}</p>
             </div>
           )}
         </div>

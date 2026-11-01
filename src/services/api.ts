@@ -80,18 +80,18 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 export const api = {
   // Auth
   auth: {
-    login: async (email: string, password: string) => {
+    login: async (username: string, password: string) => {
       const res = await request<{ user: any; token: string }>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
       if (res.token) setStoredToken(res.token);
       return res;
     },
-    register: async (name: string, email: string, password: string) => {
+    register: async (username: string, password: string, name?: string) => {
       const res = await request<{ user: any; token: string }>('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ username, password, name }),
       });
       if (res.token) setStoredToken(res.token);
       return res;

@@ -7,18 +7,24 @@ async function main() {
   console.log('[Seed] Starting database seed...');
 
   // 1. Seed Demo User
-  const passwordHash = await bcrypt.hash('Password123!', 10);
+  const passwordHash = await bcrypt.hash('Refine@2026#Agile', 10);
   const demoUser = await prisma.user.upsert({
-    where: { email: 'demo@refineboard.com' },
-    update: { passwordHash },
+    where: { username: 'demo' },
+    update: {
+      passwordHash,
+      name: 'Demo User',
+      username: 'demo',
+      email: 'demo@refineboard.com',
+    },
     create: {
       name: 'Demo User',
+      username: 'demo',
       email: 'demo@refineboard.com',
       passwordHash,
       role: 'admin',
     },
   });
-  console.log(`[Seed] Demo user created: ${demoUser.email} / Password123!`);
+  console.log(`[Seed] Demo user created: username: ${demoUser.username} / Refine@2026#Agile`);
 
   // 2. Seed Default Settings
   await prisma.appSettings.upsert({

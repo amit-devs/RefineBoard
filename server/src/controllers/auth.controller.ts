@@ -13,10 +13,21 @@ const COOKIE_OPTIONS = {
 
 export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { name, email, password } = req.body;
+    const { name, username, password } = req.body;
 
-    if (!name || !email || !password) {
-      res.status(400).json({ error: 'Name, email, and password are required.' });
+    if (!username || !password) {
+      res.status(400).json({ error: 'Username and password are required.' });
+      return;
+    }
+
+    const trimmedUsername = username.trim();
+    if (trimmedUsername.length < 3) {
+      res.status(400).json({ error: 'Username must be at least 3 characters long.' });
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmedUsername)) {
+      res.status(400).json({ error: 'Username can only contain letters, numbers, underscores, and hyphens.' });
       return;
     }
 
@@ -25,14 +36,14 @@ export async function register(req: Request, res: Response, next: NextFunction):
       return;
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedUsername = trimmedUsername.toLowerCase();
 
     const existing = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
+      where: { username: normalizedUsername },
     });
 
     if (existing) {
-      res.status(409).json({ error: 'An account with this email address already exists.' });
+      res.status(409).json({ error: 'An account with this username already exists.' });
       return;
     }
 
@@ -40,15 +51,15 @@ export async function register(req: Request, res: Response, next: NextFunction):
 
     const user = await prisma.user.create({
       data: {
-        name: name.trim(),
-        email: normalizedEmail,
+        name: (name || trimmedUsername).trim(),
+        username: normalizedUsername,
         passwordHash,
         role: 'member',
       },
       select: {
         id: true,
         name: true,
-        email: true,
+        username: true,
         role: true,
         createdAt: true,
       },
@@ -56,7 +67,7 @@ export async function register(req: Request, res: Response, next: NextFunction):
 
     const token = signToken({
       userId: user.id,
-      email: user.email,
+      username: user.username,
       role: user.role,
     });
 
@@ -69,34 +80,40 @@ export async function register(req: Request, res: Response, next: NextFunction):
 
 export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      res.status(400).json({ error: 'Email and password are required.' });
+    if (!username || !password) {
+      res.status(400).json({ error: 'Username and password are required.' });
       return;
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedIdentifier = username.toLowerCase().trim();
 
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: normalizedIdentifier },
+          { email: normalizedIdentifier },
+        ],
+      },
     });
 
     if (!user) {
-      res.status(401).json({ error: 'Invalid email or password.' });
+      res.status(401).json({ error: 'Invalid username or password.' });
       return;
     }
 
     const isValid = await comparePassword(password, user.passwordHash);
     if (!isValid) {
-      res.status(401).json({ error: 'Invalid email or password.' });
+      res.status(401).json({ error: 'Invalid username or password.' });
       return;
     }
 
     const token = signToken({
       userId: user.id,
-      email: user.email,
+      username: user.username,
       role: user.role,
+      email: user.email || undefined,
     });
 
     res.cookie('token', token, COOKIE_OPTIONS);
@@ -104,7 +121,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
+        username: user.username,
         role: user.role,
         createdAt: user.createdAt,
       },
@@ -132,7 +149,7 @@ export async function getMe(req: AuthRequest, res: Response, next: NextFunction)
       select: {
         id: true,
         name: true,
-        email: true,
+        username: true,
         role: true,
         createdAt: true,
       },
